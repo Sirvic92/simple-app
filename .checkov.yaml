@@ -1,0 +1,6 @@
+skip-check:
+  - CKV_DOCKER_2
+
+output: cli
+quiet: true
+compact: true

@@ -1,0 +1,55 @@
+name: DevOps Pipeline
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build_and_push_images:
+    name: Build and Push Docker Images to DockerHub and AWS ECR
+    runs-on: [self-hosted, s8]
+
+    env:
+      AWS_REGION: us-east-1
+      ECR_REGISTRY: 788210522308.dkr.ecr.us-east-1.amazonaws.com
+
+      # DockerHub Image Tags
+      API_IMAGE: devopseasylearning/s9-api:latest
+      DB_IMAGE: devopseasylearning/s9-db:latest
+      FRONTEND_IMAGE: devopseasylearning/s9-frontend:latest
+
+      # ECR Image Tags
+      ECR_API_IMAGE: 788210522308.dkr.ecr.us-east-1.amazonaws.com/s9-api:latest
+      ECR_DB_IMAGE: 788210522308.dkr.ecr.us-east-1.amazonaws.com/s9-db:latest
+      ECR_FRONTEND_IMAGE: 788210522308.dkr.ecr.us-east-1.amazonaws.com/s9-frontend:latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Build Docker Images (API, DB, Frontend)
+        working-directory: s9/app01
+        run: |
+          sudo docker build -f api.Dockerfile -t $API_IMAGE -t $ECR_API_IMAGE .
+          sudo docker build -f db.Dockerfile -t $DB_IMAGE -t $ECR_DB_IMAGE .
+          sudo docker build -f frontend.Dockerfile -t $FRONTEND_IMAGE -t $ECR_FRONTEND_IMAGE .
+          sudo docker images
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        run: |
+          aws ecr get-login-password --region $AWS_REGION | \
+          sudo docker login --username AWS --password-stdin $ECR_REGISTRY
+
+      - name: Push Images to Amazon ECR
+        run: |
+          sudo docker push $ECR_API_IMAGE
+          sudo docker push $ECR_DB_IMAGE
+          sudo docker push $ECR_FRONTEND_IMAGE

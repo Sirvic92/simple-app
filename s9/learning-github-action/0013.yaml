@@ -1,0 +1,112 @@
+name: DevOps Pipeline
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build_and_push_images:
+    name: Build and Push Docker Images to DockerHub
+    runs-on: [self-hosted, s8]
+
+    env:
+      API_IMAGE: devopseasylearning/s9-api:latest
+      DB_IMAGE: devopseasylearning/s9-db:latest
+      FRONTEND_IMAGE: devopseasylearning/s9-frontend:latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Run SonarQube Scan
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: |
+          sonar-scanner \
+            -Dsonar.login=$SONAR_TOKEN-tia
+
+      - name: Send Slack Notification (Success/Failure)
+        if: always()
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: |
+          STATUS="Success"
+          COLOR="#2eb886"
+          ICON="✅"
+          if [ "${{ job.status }}" != "success" ]; then
+            STATUS="Failed"
+            COLOR="#e01e5a"
+            ICON="❌"
+          fi
+
+          TIMESTAMP=$(date -u +"%Y-%m-%d %H:%M UTC")
+
+          curl -X POST -H 'Content-type: application/json' --data "{
+            \"attachments\": [
+              {
+                \"color\": \"$COLOR\",
+                \"blocks\": [
+                  {
+                    \"type\": \"header\",
+                    \"text\": {
+                      \"type\": \"plain_text\",
+                      \"text\": \"$ICON DevOps Pipeline $STATUS\",
+                      \"emoji\": true
+                    }
+                  },
+                  {
+                    \"type\": \"section\",
+                    \"fields\": [
+                      { \"type\": \"mrkdwn\", \"text\": \"*Repository:*\n${GITHUB_REPOSITORY}\" },
+                      { \"type\": \"mrkdwn\", \"text\": \"*Branch:*\nmain\" },
+                      { \"type\": \"mrkdwn\", \"text\": \"*Status:*\n$STATUS\" },
+                      { \"type\": \"mrkdwn\", \"text\": \"*Triggered By:*\n${GITHUB_ACTOR}\" },
+                      { \"type\": \"mrkdwn\", \"text\": \"*Commit:*\n<https://github.com/${GITHUB_REPOSITORY}/commit/${GITHUB_SHA}|${GITHUB_SHA:0:7}>\" },
+                      { \"type\": \"mrkdwn\", \"text\": \"*Time:*\n$TIMESTAMP\" }
+                    ]
+                  },
+                  {
+                    \"type\": \"context\",
+                    \"elements\": [
+                      {
+                        \"type\": \"mrkdwn\",
+                        \"text\": \"$ICON View details in <https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}|GitHub Actions>.\"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }" "$SLACK_WEBHOOK_URL"
+
+      # - name: Send Slack Notification (Success or Failure)
+      #   if: always()
+      #   env:
+      #     SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+      #   run: |
+      #     STATUS="Success"
+      #     COLOR="#36a64f"
+      #     ICON="✅"
+      #     if [ "${{ job.status }}" != "success" ]; then
+      #       STATUS="Failed"
+      #       COLOR="#FF0000"
+      #       ICON="❌"
+      #     fi
+
+      #     curl -X POST -H 'Content-type: application/json' --data "{
+      #       \"attachments\": [
+      #         {
+      #           \"color\": \"$COLOR\",
+      #           \"blocks\": [
+      #             {
+      #               \"type\": \"section\",
+      #               \"text\": {
+      #                 \"type\": \"mrkdwn\",
+      #                 \"text\": \"$ICON *DevOps Pipeline $STATUS*\\n*Repository:* $GITHUB_REPOSITORY\\n*Branch:* main\\n*Status:* $STATUS\\n*Commit:* <https://github.com/${GITHUB_REPOSITORY}/commit/${GITHUB_SHA}|${GITHUB_SHA}>\\n*Actor:* ${{ github.actor }}\"
+      #               }
+      #             }
+      #           ]
+      #         }
+      #       ]
+      #     }" "$SLACK_WEBHOOK_URL"
