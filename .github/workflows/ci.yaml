@@ -2,7 +2,7 @@ name: devops workflow
 on:
   push:
     branches: [ main ]
-Jobs:
+jobs:
   sonnerqube-scan:
     runs-on: ubuntu-latest
     steps:
