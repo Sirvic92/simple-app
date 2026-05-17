@@ -26,9 +26,6 @@ jobs:
         directory: .
         soft_fail: true
 
-    - name: Login to Docker Hub
-      run: echo "${{ secrets.DOCKERHUB_PASSWORD }}" | docker login -u "${{ vars.DOCKERHUB_USERNAME }}" --password-stdin
-
     - name: Build API image
       run: docker build -t ${{ vars.DOCKERHUB_USERNAME }}/simple-app-api:${{ github.sha }} -f s9/app01/api.Dockerfile s9/app01
 
@@ -38,6 +35,33 @@ jobs:
     - name: Build database image
       run: docker build -t ${{ vars.DOCKERHUB_USERNAME }}/simple-app-db:${{ github.sha }} -f s9/app01/db.Dockerfile s9/app01
 
+    - name: Trivy scan API image
+      uses: aquasecurity/trivy-action@v0.36.0
+      with:
+        image-ref: ${{ vars.DOCKERHUB_USERNAME }}/simple-app-api:${{ github.sha }}
+        format: table
+        exit-code: 1
+        severity: CRITICAL,HIGH
+
+    - name: Trivy scan frontend image
+      uses: aquasecurity/trivy-action@v0.36.0
+      with:
+        image-ref: ${{ vars.DOCKERHUB_USERNAME }}/simple-app-frontend:${{ github.sha }}
+        format: table
+        exit-code: 1
+        severity: CRITICAL,HIGH
+
+    - name: Trivy scan database image
+      uses: aquasecurity/trivy-action@v0.36.0
+      with:
+        image-ref: ${{ vars.DOCKERHUB_USERNAME }}/simple-app-db:${{ github.sha }}
+        format: table
+        exit-code: 1
+        severity: CRITICAL,HIGH
+
+    - name: Login to Docker Hub
+      run: echo "${{ secrets.DOCKERHUB_PASSWORD }}" | docker login -u "${{ vars.DOCKERHUB_USERNAME }}" --password-stdin
+
     - name: Push API image
       run: docker push ${{ vars.DOCKERHUB_USERNAME }}/simple-app-api:${{ github.sha }}
 
@@ -46,5 +70,3 @@ jobs:
 
     - name: Push database image
       run: docker push ${{ vars.DOCKERHUB_USERNAME }}/simple-app-db:${{ github.sha }}
-    - name: test
-      run: sudo docker images
