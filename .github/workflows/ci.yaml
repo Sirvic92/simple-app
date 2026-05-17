@@ -26,28 +26,25 @@ jobs:
         directory: .
         soft_fail: true
 
+    - name: Login to Docker Hub
+      run: echo "${{ secrets.DOCKERHUB_PASSWORD }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
+
     - name: Build API image
-      uses: docker/build-push-action@v7
-      with:
-        context: s9/app01
-        file: s9/app01/api.Dockerfile
-        push: false
-        tags: simple-app-api:latest
+      run: docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/simple-app-api:${{ github.sha }} -f s9/app01/api.Dockerfile s9/app01
 
     - name: Build frontend image
-      uses: docker/build-push-action@v7
-      with:
-        context: s9/app01
-        file: s9/app01/frontend.Dockerfile
-        push: false
-        tags: simple-app-frontend:latest
+      run: docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/simple-app-frontend:${{ github.sha }} -f s9/app01/frontend.Dockerfile s9/app01
 
     - name: Build database image
-      uses: docker/build-push-action@v7
-      with:
-        context: s9/app01
-        file: s9/app01/db.Dockerfile
-        push: false
-        tags: simple-app-db:latest
-    - name: Run tests
+      run: docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/simple-app-db:${{ github.sha }} -f s9/app01/db.Dockerfile s9/app01
+
+    - name: Push API image
+      run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/simple-app-api:${{ github.sha }}
+
+    - name: Push frontend image
+      run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/simple-app-frontend:${{ github.sha }}
+
+    - name: Push database image
+      run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/simple-app-db:${{ github.sha }}
+    - name: test
       run: sudo docker images
