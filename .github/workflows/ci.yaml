@@ -30,21 +30,21 @@ jobs:
       run: echo "${{ secrets.DOCKERHUB_PASSWORD }}" | docker login -u "${{ vars.DOCKERHUB_USERNAME }}" --password-stdin
 
     - name: Build API image
-      run: docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/simple-app-api:${{ github.sha }} -f s9/app01/api.Dockerfile s9/app01
+      run: docker build -t ${{ vars.DOCKERHUB_USERNAME }}/simple-app-api:${{ github.sha }} -f s9/app01/api.Dockerfile s9/app01
 
     - name: Build frontend image
-      run: docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/simple-app-frontend:${{ github.sha }} -f s9/app01/frontend.Dockerfile s9/app01
+      run: docker build -t ${{ vars.DOCKERHUB_USERNAME }}/simple-app-frontend:${{ github.sha }} -f s9/app01/frontend.Dockerfile s9/app01
 
     - name: Build database image
-      run: docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/simple-app-db:${{ github.sha }} -f s9/app01/db.Dockerfile s9/app01
+      run: docker build -t ${{ vars.DOCKERHUB_USERNAME }}/simple-app-db:${{ github.sha }} -f s9/app01/db.Dockerfile s9/app01
 
     - name: Push API image
-      run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/simple-app-api:${{ github.sha }}
+      run: docker push ${{ vars.DOCKERHUB_USERNAME }}/simple-app-api:${{ github.sha }}
 
     - name: Push frontend image
-      run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/simple-app-frontend:${{ github.sha }}
+      run: docker push ${{ vars.DOCKERHUB_USERNAME }}/simple-app-frontend:${{ github.sha }}
 
     - name: Push database image
-      run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/simple-app-db:${{ github.sha }}
+      run: docker push ${{ vars.DOCKERHUB_USERNAME }}/simple-app-db:${{ github.sha }}
     - name: test
       run: sudo docker images
