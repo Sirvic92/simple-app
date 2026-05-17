@@ -49,3 +49,7 @@ jobs:
         file: s9/app01/db.Dockerfile
         push: false
         tags: simple-app-db:latest
+    - name: Run tests
+      run: |
+        echo "Running tests..."
+        # sudo docker images 
