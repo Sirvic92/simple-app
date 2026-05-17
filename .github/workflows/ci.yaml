@@ -50,6 +50,4 @@ jobs:
         push: false
         tags: simple-app-db:latest
     - name: Run tests
-      run: |
-        echo "Running tests..."
-        # sudo docker images 
+      run: sudo docker images
