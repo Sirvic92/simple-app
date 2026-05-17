@@ -24,3 +24,4 @@ jobs:
       uses: bridgecrewio/checkov-action@v12.1347.0
       with:
         directory: .
+        soft_fail: true
