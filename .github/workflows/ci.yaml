@@ -27,7 +27,7 @@ jobs:
         soft_fail: true
 
     - name: Login to Docker Hub
-      run: echo "${{ secrets.DOCKERHUB_PASSWORD }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
+      run: echo "${{ secrets.DOCKERHUB_PASSWORD }}" | docker login -u "${{ vars.DOCKERHUB_USERNAME }}" --password-stdin
 
     - name: Build API image
       run: docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/simple-app-api:${{ github.sha }} -f s9/app01/api.Dockerfile s9/app01
