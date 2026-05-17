@@ -25,3 +25,27 @@ jobs:
       with:
         directory: .
         soft_fail: true
+
+    - name: Build API image
+      uses: docker/build-push-action@v7
+      with:
+        context: s9/app01
+        file: s9/app01/api.Dockerfile
+        push: false
+        tags: simple-app-api:latest
+
+    - name: Build frontend image
+      uses: docker/build-push-action@v7
+      with:
+        context: s9/app01
+        file: s9/app01/frontend.Dockerfile
+        push: false
+        tags: simple-app-frontend:latest
+
+    - name: Build database image
+      uses: docker/build-push-action@v7
+      with:
+        context: s9/app01
+        file: s9/app01/db.Dockerfile
+        push: false
+        tags: simple-app-db:latest
