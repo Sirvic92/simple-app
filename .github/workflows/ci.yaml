@@ -5,7 +5,7 @@ on:
     branches: [ main ]
 
 jobs:
-  sonarqube-scan:
+  security-scan:
     runs-on: ubuntu-latest
 
     steps:
@@ -19,3 +19,9 @@ jobs:
       env:
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         SONAR_HOST_URL: ${{ vars.SONAR_URL }}
+
+    - name: Checkov scan
+      uses: bridgecrewio/checkov-action@v12.1347.0
+      with:
+        directory: .
+        framework: kubernetes,dockerfile,terraform
